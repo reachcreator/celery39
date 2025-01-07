@@ -17,8 +17,9 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Use the function
+NOT_USED_TEST = os.environ.get("CELERY_BROKER_URL")
 # replace $ in the url with escaped $ that is URL encoded safely so the $ doesn't mess things up
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL").replace("$", "%24")
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
 
 
 # Quick-start development settings - unsuitable for production
