@@ -18,23 +18,31 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 def ensure_redis_url_quoted(url: str) -> str:
-    """
-    Automatically URL-encode the Redis password if the scheme is 'redis://'.
-    """
-    if not url or not url.startswith("redis://"):
+    if not url:
         return url
 
-    parsed = urllib.parse.urlparse(url)
-    
-    # If there's no hostname, just return.
+    # Only modify if it starts with redis:// or rediss://
+    if not (url.startswith("redis://") or url.startswith("rediss://")):
+        return url
+
+    try:
+        parsed = urllib.parse.urlparse(url)
+    except ValueError:
+        # If urlparse fails, just return the raw URL so Django won't crash
+        return url
+
     if not parsed.hostname:
         return url
 
+    # If there's a password that hasn't been escaped (i.e. missing '%')
     if parsed.password and '%' not in parsed.password:
-        # We only encode if it's not already encoded
         encoded_password = urllib.parse.quote(parsed.password, safe='')
-        user_and_pass = f"{parsed.username or ''}:{encoded_password}" if parsed.username else f":{encoded_password}"
+        if parsed.username:
+            user_and_pass = f"{parsed.username}:{encoded_password}"
+        else:
+            user_and_pass = f":{encoded_password}"
 
+        # Rebuild netloc (user:pass@host:port)
         new_netloc = f"{user_and_pass}@{parsed.hostname}"
         if parsed.port:
             new_netloc += f":{parsed.port}"
@@ -44,7 +52,7 @@ def ensure_redis_url_quoted(url: str) -> str:
 
     return url
 
-# Get and safely encode the Redis password in the broker URL.
+# Use the function
 raw_broker_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_BROKER_URL = ensure_redis_url_quoted(raw_broker_url)
 
