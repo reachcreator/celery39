@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
 from django.views import View
-
+from django.views.decorators.csrf import csrf_exempt
 from .models import Calculation
 from .tasks import fibonacci_task
 
 
+@csrf_exempt
 class FibonacciView(View):
     def get(self, request):
         """Show a form to start a calculation"""
@@ -22,7 +23,7 @@ class FibonacciView(View):
 
         return redirect('fibonacci_list')
 
-
+@csrf_exempt
 class FibonacciListView(View):
     def get(self, request):
         """Show a list of past calculations"""
