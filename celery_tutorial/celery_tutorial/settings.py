@@ -123,4 +123,5 @@ STATIC_URL = '/static/'
 
 # Celery settings
 
-CELERY_BROKER_URL = 'redis://localhost:6379'
+import os
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
