@@ -53,13 +53,9 @@ def ensure_redis_url_quoted(url: str) -> str:
     return url
 
 # Use the function
-raw_broker_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
-CELERY_BROKER_URL = ensure_redis_url_quoted(raw_broker_url)
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = os.environ.get("REDIS_HOST")
 
-CELERY_RESULT_BACKEND = CELERY_BROKER_URL
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
 
 
 # Quick-start development settings - unsuitable for production
