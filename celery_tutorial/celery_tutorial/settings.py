@@ -11,46 +11,10 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
-import urllib.parse
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-def ensure_redis_url_quoted(url: str) -> str:
-    if not url:
-        return url
-
-    # Only modify if it starts with redis:// or rediss://
-    if not (url.startswith("redis://") or url.startswith("rediss://")):
-        return url
-
-    try:
-        parsed = urllib.parse.urlparse(url)
-    except ValueError:
-        # If urlparse fails, just return the raw URL so Django won't crash
-        return url
-
-    if not parsed.hostname:
-        return url
-
-    # If there's a password that hasn't been escaped (i.e. missing '%')
-    if parsed.password and '%' not in parsed.password:
-        encoded_password = urllib.parse.quote(parsed.password, safe='')
-        if parsed.username:
-            user_and_pass = f"{parsed.username}:{encoded_password}"
-        else:
-            user_and_pass = f":{encoded_password}"
-
-        # Rebuild netloc (user:pass@host:port)
-        new_netloc = f"{user_and_pass}@{parsed.hostname}"
-        if parsed.port:
-            new_netloc += f":{parsed.port}"
-
-        parsed = parsed._replace(netloc=new_netloc)
-        return urllib.parse.urlunparse(parsed)
-
-    return url
 
 # Use the function
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
