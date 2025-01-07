@@ -25,7 +25,7 @@ SECRET_KEY = '&1rasai3*##9qt=v=9zqnytli=mixdsff49&s+kwmn(u(49asg'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['celery-demo-ylwby.kinsta.app']
 
 
 # Application definition
