@@ -17,8 +17,9 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Use the function
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
-CELERY_RESULT_BACKEND = os.environ.get("REDIS_HOST")
+# replace $ in the url with escaped $ that is URL encoded safely so the $ doesn't mess things up
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL").replace("$", "%24")
+CELERY_RESULT_BACKEND = os.environ.get("REDIS_HOST").replace("$", "%24")
 
 
 
