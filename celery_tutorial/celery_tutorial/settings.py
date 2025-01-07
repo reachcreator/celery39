@@ -11,9 +11,47 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import urllib.parse
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+def ensure_redis_url_quoted(url: str) -> str:
+    """
+    Automatically URL-encode the Redis password if the scheme is 'redis://'.
+    """
+    if not url or not url.startswith("redis://"):
+        return url
+
+    parsed = urllib.parse.urlparse(url)
+    
+    # If there's no hostname, just return.
+    if not parsed.hostname:
+        return url
+
+    if parsed.password and '%' not in parsed.password:
+        # We only encode if it's not already encoded
+        encoded_password = urllib.parse.quote(parsed.password, safe='')
+        user_and_pass = f"{parsed.username or ''}:{encoded_password}" if parsed.username else f":{encoded_password}"
+
+        new_netloc = f"{user_and_pass}@{parsed.hostname}"
+        if parsed.port:
+            new_netloc += f":{parsed.port}"
+
+        parsed = parsed._replace(netloc=new_netloc)
+        return urllib.parse.urlunparse(parsed)
+
+    return url
+
+# Get and safely encode the Redis password in the broker URL.
+raw_broker_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_BROKER_URL = ensure_redis_url_quoted(raw_broker_url)
+
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
 
 
 # Quick-start development settings - unsuitable for production
@@ -119,9 +157,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
-
-# Celery settings
-
-import os
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
