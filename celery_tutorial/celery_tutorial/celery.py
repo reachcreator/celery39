@@ -20,4 +20,6 @@ app.autodiscover_tasks()
 
 @app.task(bind=True)
 def debug_task(self):
-    print('Request: {0!r}'.format(self.request))
+    from django.conf import settings
+    print(f"Using database: {settings.DATABASES['default']['NAME']}")
+    print(f"Base dir: {settings.BASE_DIR}")

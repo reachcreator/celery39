@@ -17,7 +17,20 @@ def fib(n):
 @app.task(bind=True)
 def fibonacci_task(self, calculation_id):
     """Perform a calculation & update the status"""
-    calculation = Calculation.objects.get(id=calculation_id)
+    import os
+    from django.conf import settings
+    
+    db_path = settings.DATABASES['default']['NAME']
+    print(f"Database path: {db_path}")
+    print(f"Database exists: {os.path.exists(db_path)}")
+    
+    try:
+        calculation = Calculation.objects.get(id=calculation_id)
+    except Exception as e:
+        print(f"Error getting calculation: {str(e)}")
+        # Get the actual table name from the model
+        print(f"Expected table name: {Calculation._meta.db_table}")
+        raise
 
     try:
         calculation.output = fib(calculation.input)
