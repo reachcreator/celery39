@@ -1,0 +1,7 @@
+providers = ['python']
+
+[phases.build]
+cmds = [
+    "python manage.py collectstatic --noinput",
+    "python manage.py migrate"
+]
